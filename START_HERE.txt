@@ -1,0 +1,128 @@
+================================================================================
+    MULTI-AGENT BEAUTY & AESTHETICS PROJECT - QUICK START
+================================================================================
+
+Follow these 5 simple steps to get everything running:
+
+--------------------------------------------------------------------------------
+STEP 1: Start the Backend (Flask API)
+--------------------------------------------------------------------------------
+
+1. Open Command Prompt/Terminal
+
+2. Navigate to project:
+   cd "C:\New Development 2025\AI ML\Agentic AI\Capstone Demo\yelp_mcp"
+
+3. Start the server:
+   python api_server.py
+
+4. You should see:
+   ============================================================
+   Multi-Agent API Server
+   ============================================================
+   LLM Provider: OPENAI
+   SupervisorAgent: [OK] Initialized
+   RAG System: [OK] Ready
+   ============================================================
+
+   Server starting on http://localhost:5000
+
+✅ KEEP THIS TERMINAL OPEN - The server must stay running!
+
+--------------------------------------------------------------------------------
+STEP 2: Index Products (One-time setup)
+--------------------------------------------------------------------------------
+
+1. Open a NEW Command Prompt/Terminal
+
+2. Run this command:
+   curl -X POST http://localhost:5000/api/index-products
+
+3. Wait 2-3 minutes (it's scraping Botox and Evolus websites)
+
+4. You'll see:
+   {
+     "status": "success",
+     "message": "Products indexed successfully"
+   }
+
+✅ You only need to do this ONCE (unless you delete the index)
+
+--------------------------------------------------------------------------------
+STEP 3: Test the API
+--------------------------------------------------------------------------------
+
+Test if everything works:
+
+curl -X POST http://localhost:5000/api/query -H "Content-Type: application/json" -d "{\"query\": \"What is Botox?\"}"
+
+You should get a detailed response about Botox!
+
+--------------------------------------------------------------------------------
+STEP 4: Set Up React Frontend
+--------------------------------------------------------------------------------
+
+1. Navigate to your React project:
+   cd "C:\path\to\your\react-project"
+
+2. Install axios:
+   npm install axios
+
+3. Create API service file:
+   - Create folder: src/services/
+   - Create file: src/services/apiService.js
+   - Copy code from REACT_API_GUIDE.md
+
+4. Update App.jsx:
+   - Copy the updated App.jsx code from REACT_API_GUIDE.md
+
+--------------------------------------------------------------------------------
+STEP 5: Start React App
+--------------------------------------------------------------------------------
+
+1. In your React project folder:
+   npm start
+
+2. React app opens at:
+   http://localhost:3000
+
+3. Try asking:
+   - "What is Botox used for?"
+   - "Compare Botox and Evolus"
+   - "Find Botox clinics in New York"
+
+================================================================================
+                              YOU'RE DONE! 🎉
+================================================================================
+
+WHAT'S RUNNING:
+• Flask API Server: http://localhost:5000 (Backend)
+• React App: http://localhost:3000 (Frontend)
+
+HOW IT WORKS:
+1. User types query in React
+2. React sends to Flask API
+3. SupervisorAgent routes to ProductAgent or BusinessAgent
+4. ProductAgent = RAG system (Botox/Evolus info)
+5. BusinessAgent = Yelp API (business search)
+6. Response shown in React UI
+
+TROUBLESHOOTING:
+• Port 5000 in use? → Kill the process or change port in api_server.py
+• "Module not found"? → Run: pip install -r requirements.txt
+• "RAG not indexed"? → Run: curl -X POST http://localhost:5000/api/index-products
+• CORS errors? → Make sure Flask server is running
+
+HELPFUL COMMANDS:
+• Check API health: curl http://localhost:5000/api/health
+• Test product query: curl -X POST http://localhost:5000/api/query -H "Content-Type: application/json" -d "{\"query\": \"What is Botox?\"}"
+• Test business query: curl -X POST http://localhost:5000/api/query -H "Content-Type: application/json" -d "{\"query\": \"Find spas in LA\"}"
+
+DOCUMENTATION:
+• Full guide: HOW_TO_RUN.md
+• React integration: REACT_API_GUIDE.md
+• Quick start: QUICK_START.md
+
+================================================================================
+Need help? Check HOW_TO_RUN.md for detailed troubleshooting!
+================================================================================

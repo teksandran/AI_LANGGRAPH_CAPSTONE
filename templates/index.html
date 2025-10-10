@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aesthetic Product Search - RAG System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button-success {
+            background: #48bb78;
+        }
+
+        .button-success:hover {
+            background: #38a169;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .result-item {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .result-item h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .result-item p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-top: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .status-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .status-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💉 Aesthetic Product Search</h1>
+            <p>Powered by RAG - Evolus & Botox Product Information</p>
+        </div>
+
+        <div class="card">
+            <h2>Step 1: Index Products</h2>
+            <p style="margin: 15px 0; color: #666;">First, index the product websites to enable search functionality.</p>
+            <button class="button" id="indexBtn" onclick="indexProducts()">📥 Index Product Websites</button>
+            <div id="indexStatus"></div>
+        </div>
+
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('search')">🔍 Product Search</button>
+                <button class="tab" onclick="switchTab('treatment')">💉 Treatment Area Search</button>
+                <button class="tab" onclick="switchTab('summary')">📊 Summary</button>
+            </div>
+
+            <!-- Product Search Tab -->
+            <div id="searchTab" class="tab-content active">
+                <h2>Search Aesthetic Products</h2>
+                <div class="input-group">
+                    <label for="searchQuery">Search Query:</label>
+                    <input type="text" id="searchQuery" placeholder="e.g., wrinkle reduction, botox cosmetic">
+                </div>
+                <div class="input-group">
+                    <label for="brandFilter">Brand Filter (optional):</label>
+                    <select id="brandFilter">
+                        <option value="">All Brands</option>
+                        <option value="botox">Botox</option>
+                        <option value="evolus">Evolus</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="resultLimit">Number of Results:</label>
+                    <input type="number" id="resultLimit" value="5" min="1" max="20">
+                </div>
+                <button class="button button-success" onclick="searchProducts()">🔍 Search Products</button>
+                <div id="searchResults" class="results"></div>
+            </div>
+
+            <!-- Treatment Area Search Tab -->
+            <div id="treatmentTab" class="tab-content">
+                <h2>Search by Treatment Area</h2>
+                <div class="input-group">
+                    <label for="treatmentArea">Treatment Area:</label>
+                    <select id="treatmentArea">
+                        <option value="forehead">Forehead Lines</option>
+                        <option value="frown lines">Frown Lines (Glabellar)</option>
+                        <option value="crow's feet">Crow's Feet</option>
+                        <option value="brow">Brow Lift</option>
+                        <option value="neck">Neck Lines</option>
+                        <option value="lip">Lip Lines</option>
+                    </select>
+                </div>
+                <button class="button button-success" onclick="searchTreatments()">💉 Find Treatments</button>
+                <div id="treatmentResults" class="results"></div>
+            </div>
+
+            <!-- Summary Tab -->
+            <div id="summaryTab" class="tab-content">
+                <h2>Indexed Products Summary</h2>
+                <button class="button button-success" onclick="loadSummary()">📊 Load Summary</button>
+                <div id="summaryResults" class="results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tab + 'Tab').classList.add('active');
+        }
+
+        async function indexProducts() {
+            const btn = document.getElementById('indexBtn');
+            const status = document.getElementById('indexStatus');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Indexing...';
+            status.innerHTML = '<div class="loading">Scraping and indexing product websites. This may take a few minutes...</div>';
+
+            try {
+                const response = await fetch('/api/index-products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    status.innerHTML = `
+                        <div class="status status-success">
+                            <strong>✓ Success!</strong><br>
+                            Evolus pages: ${data.statistics.evolus || 0}<br>
+                            Botox pages: ${data.statistics.botox || 0}<br>
+                            Total documents: ${data.statistics.total_documents || 0}
+                        </div>
+                    `;
+                    btn.textContent = '✓ Indexed Successfully';
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="status status-error"><strong>✗ Error:</strong> ${error.message}</div>`;
+                btn.disabled = false;
+                btn.textContent = '📥 Index Product Websites';
+            }
+        }
+
+        async function searchProducts() {
+            const query = document.getElementById('searchQuery').value;
+            const brand = document.getElementById('brandFilter').value;
+            const limit = parseInt(document.getElementById('resultLimit').value);
+            const resultsDiv = document.getElementById('searchResults');
+
+            if (!query) {
+                alert('Please enter a search query');
+                return;
+            }
+
+            resultsDiv.innerHTML = '<div class="loading">Searching...</div>';
+
+            try {
+                const response = await fetch('/api/search-products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, brand, limit })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    displayResults(data.results, resultsDiv);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="status status-error">${error.message}</div>`;
+            }
+        }
+
+        async function searchTreatments() {
+            const area = document.getElementById('treatmentArea').value;
+            const resultsDiv = document.getElementById('treatmentResults');
+
+            resultsDiv.innerHTML = '<div class="loading">Searching treatments...</div>';
+
+            try {
+                const response = await fetch('/api/search-treatments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ area, limit: 5 })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    displayResults(data.results, resultsDiv);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="status status-error">${error.message}</div>`;
+            }
+        }
+
+        async function loadSummary() {
+            const resultsDiv = document.getElementById('summaryResults');
+            resultsDiv.innerHTML = '<div class="loading">Loading summary...</div>';
+
+            try {
+                const response = await fetch('/api/product-summary');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const summary = data.summary;
+                    let html = `
+                        <div class="result-item">
+                            <h3>📊 Indexing Statistics</h3>
+                            <p><strong>Total Documents:</strong> ${summary.total_documents || 0}</p>
+                            <p><strong>Products Indexed:</strong> ${summary.products || 0}</p>
+                            <p><strong>Web Pages:</strong> ${summary.webpages || 0}</p>
+                            <p><strong>Brands:</strong> ${(summary.brands || []).join(', ')}</p>
+                        </div>
+                    `;
+
+                    if (summary.sample_products) {
+                        html += '<div class="result-item"><h3>📦 Sample Products</h3>';
+                        summary.sample_products.forEach(p => {
+                            html += `<p>• ${p.name} (${p.brand.toUpperCase()})</p>`;
+                        });
+                        html += '</div>';
+                    }
+
+                    resultsDiv.innerHTML = html;
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="status status-error">${error.message}</div>`;
+            }
+        }
+
+        function displayResults(results, container) {
+            if (!results || results.length === 0) {
+                container.innerHTML = '<div class="status status-error">No results found</div>';
+                return;
+            }
+
+            let html = `<h3>Found ${results.length} result(s):</h3>`;
+
+            results.forEach((result, index) => {
+                html += `
+                    <div class="result-item">
+                        <h3>${index + 1}. ${result.product_name || 'Product'}</h3>
+                        <p><strong>Brand:</strong> ${result.brand.toUpperCase()}</p>
+                        ${result.product_type !== 'N/A' ? `<p><strong>Type:</strong> ${result.product_type}</p>` : ''}
+                        ${result.treatment_areas !== 'N/A' ? `<p><strong>Treatment Areas:</strong> ${result.treatment_areas}</p>` : ''}
+                        <p><strong>Content:</strong></p>
+                        <p style="background: white; padding: 10px; border-radius: 5px; white-space: pre-wrap;">${result.content}</p>
+                        <span class="badge">${result.type}</span>
+                        <span class="badge">${result.brand}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
